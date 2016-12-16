@@ -30,17 +30,11 @@ object Day8 {
   
   def lit( grid : Array[Array[Char]] ) : Int = {
     
-    var count = 0
-    
     val f = grid.flatten
     
-    for( c <- f ){
-      if( c == '#' ){
-        count = count + 1
-      }
-    }
+    val l = f.filter( _ == '#' )
     
-    count
+    l.length
     
   }
   
