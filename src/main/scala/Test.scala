@@ -4,14 +4,22 @@ object Test {
   
   def main( args : Array[String] ) : Unit = {
     
-    var c = '0'
-    Console.println( c.toInt )
-    c = '9'
-    Console.println( c.toInt )
-    c = 'a'
-    Console.println( c.toInt )
-    c = 'z'
-    Console.println( c.toInt )
+    val a1 = "0000000000".toCharArray()
+    
+    val a2 = "1111111111".toCharArray()
+    
+    a1.copyToArray( a2 )
+    
+    print( a2 )
+    
+    
+  }
+  
+  def print( chars : Array[Char] ) = {
+    for( i <- 0 until chars.length ){
+      Console.print( chars(i) )
+    }
+    Console.print("\n")
   }
   
   
