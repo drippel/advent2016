@@ -4,6 +4,7 @@ object Test {
   
   def main( args : Array[String] ) : Unit = {
     
+    /*
     val a1 = "0000000000".toCharArray()
     
     val a2 = "1111111111".toCharArray()
@@ -11,6 +12,18 @@ object Test {
     a1.copyToArray( a2 )
     
     print( a2 )
+
+https://github.com/keonkim/awesome-bits
+    */
+    
+    
+    val i = 42
+    Console.println(i)
+    Console.println(i.toBinaryString)
+    
+    Console.println(0.toBinaryString)
+    val x = ( i | 1 << 0 )  
+    Console.println(x.toBinaryString)
     
     
   }
