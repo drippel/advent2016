@@ -17,17 +17,10 @@ object Day11while {
 
   class Building( var floors : List[List[Int]], var steps : List[Building] )
 
-  def copy( src : Building ) : Building = {
-    val steps = List() ++ src.steps
-    val fs = src.floors.map( _.toList )
-    new Building( fs.toList, steps )
-  }
-
   def main( args : Array[String] ) : Unit = {
 
     Console.println( "day11..." )
 
-    //                 P     C     U     R     L
     val f1 = List( 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 )
     val f2 = List( 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0 )
     val f3 = List( 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1 )
@@ -38,6 +31,7 @@ object Day11while {
     val f2 = List( 0, 1, 0, 0, 0 )
     val f3 = List( 0, 0, 0, 1, 0 )
     val f4 = List( 0, 0, 0, 0, 0 )
+    * 
     */
 
     val start = new Building( List( f1, f2, f3, f4 ), List() )
@@ -49,32 +43,6 @@ object Day11while {
     Console.println( "done..." + solutions.size )
     printSteps( shortestSolution.get )
     Console.println( shortestSolution.get.steps.size )
-
-  }
-
-  val visited = ListBuffer[Building]()
-
-  def visit( bld : Building ) = {
-
-    val idx = visited.indexWhere( ( b : Building ) => { equals( b, bld ) } )
-
-    if ( idx > -1 ) {
-      if ( visited( idx ).steps.size > bld.steps.size ) {
-        visited( idx ) = bld
-      }
-    } else {
-      visited += bld
-    }
-  }
-
-  def hasVisited( bld : Building ) : Boolean = {
-
-    visited.find( ( b : Building ) => { equals( b, bld ) } ) match {
-      case Some( v ) => {
-        v.steps.size < bld.steps.size
-      }
-      case None => { false }
-    }
 
   }
 
@@ -98,27 +66,30 @@ object Day11while {
     }
   }
 
-  val deadends = ListBuffer[Building]()
-  def addDeadEnd( bld : Building ) = {
-    deadends += bld
-  }
-
-  def isDeadEnd( bld : Building ) : Boolean = {
-    deadends.contains( ( b : Building ) => { equals( b, bld ) } )
-  }
-
-  val notSafe = ListBuffer[Building]()
-  def addNotSafe( bld : Building ) = {
-    notSafe += bld
-  }
-
   def printSteps( bld : Building ) = {
-
     for ( s <- bld.steps ) {
       print( s )
     }
     print( bld )
-
+  }
+  
+  val visited = ListBuffer[Building]()
+  def hasVisited( b : Building ) : Boolean = {
+    
+    val idx = visited.indexWhere( equals( _, b ) )
+    if( idx > -1 ){
+      if( visited(idx).steps.size <= b.steps.size ){
+        true
+      }
+      else {
+        visited += b
+        false
+      }
+    }
+    else {
+      visited += b
+      false
+    }
   }
 
   def solve( start : Building ) : Unit = {
@@ -132,14 +103,30 @@ object Day11while {
     while ( !work.isEmpty ) {
 
       val current = work.dequeue()
-
+      
+      if( !isBuildingSafe( current ) ){
+        Console.println( "not safe..." )
+      }
+      else if( shortestSolution.isDefined && shortestSolution.get.steps.size < current.steps.size ){
+        Console.println( "stop..." )
+      }
+      else if( isDone( current ) ){
+        Console.println( "solved..." )
+        addSolution(current)
+      }
+      else if( isLoop( current ) ){
+        Console.println( "loop..." )
+      }
+      else if( hasVisited( current ) ){
+        Console.println( "been there..." )
+      }
+      else {  
+      
       Console.println( "solving..." )
       Console.println( work.size )
-      Console.println( visited.size )
       Console.println( solutions.size )
       Console.println( shortest )
       Console.println( current.steps.size )
-      // print(current)
 
       //  where is the elevator
       val floor = currentFloor( current )
@@ -149,50 +136,38 @@ object Day11while {
       val moves = generateMoves( floor )
 
       if ( moves.size < 1 ) {
-        // Console.println( "dead end" )
-        addDeadEnd( current )
+        Console.println( "dead end" )
       } else {
 
         for ( mv <- moves ) {
 
           // apply each move up
           if ( floorNo < current.floors.size - 1 ) {
-            move( current, floorNo, floorNo + 1, mv ) match {
-              case Some( b ) => {
-                if ( isDone( b ) ) {
-                  addSolution( b )
-                } else if ( isBuildingSafe( b ) ) {
-                  work.enqueue( b )
-                }
-              }
-              case None => {}
+            val m = move( current, floorNo, floorNo + 1, mv ) 
+            if( isBuildingSafe(m) ){
+              work.enqueue( m )
             }
           }
 
           // apply each move down
-          if ( floorNo > 0 ) {
-
-            // if the floor below is empty skip to not move items down
-            if ( !floorEmpty( current.floors( floorNo - 1 ) ) ) {
-              move( current, floorNo, floorNo - 1, mv ) match {
-                case Some( b ) => {
-                  if ( isDone( b ) ) {
-                    addSolution( b )
-                  } else if ( isBuildingSafe( b ) ) {
-                    work.enqueue( b )
-                  }
-                }
-                case None => {}
-              }
-            }
-            else {
-              Console.println("empty")
+          if( floorNo > 0 ) {
+            val m = move( current, floorNo, floorNo - 1, mv ) 
+            if( isBuildingSafe(m) ){
+              work.enqueue( m )
             }
           }
         }
-      }
+        // for
 
+        }
+      }
     }
+    // while
+  }
+  
+  def isLoop( bld : Building ) : Boolean = {
+    // is the current state anywhere in the steps to this state?
+    bld.steps.exists( (b:Building) => { equals( bld, b ) } ) 
   }
 
   def equals( b1 : Building, b2 : Building ) : Boolean = {
@@ -210,34 +185,13 @@ object Day11while {
     ok
   }
 
-  def move( start : Building, from : Int, to : Int, mv : List[Int] ) : Option[Building] = {
+  def move( start : Building, from : Int, to : Int, mv : List[Int] ) : Building = {
 
     val floors = ListBuffer() ++ start.floors
     floors( from ) = sub( floors( from ), mv )
     floors( to ) = add( floors( to ), mv )
 
-    val next = new Building( floors.toList, ( start.steps :+ start ) )
-
-    // have we moved here before?
-    /*
-    else {
-      Some( next )
-    }
-    */
-
-    if ( start.steps.exists( equals( _, next ) ) ) {
-      // Console.println( "\nno back track..." )
-      None
-    } else if ( hasVisited( next ) ) {
-      // Console.println( "\nvisited" )
-      None
-    } else if ( next.steps.size > shortest ) {
-      // Console.println( "\nalready has shorter..." )
-      None
-    } else {
-      visit( next )
-      Some( next )
-    }
+    new Building( floors.toList, ( start.steps :+ start ) )
   }
 
   def sub( floor : List[Int], move : List[Int] ) : List[Int] = {
@@ -306,15 +260,7 @@ object Day11while {
   }
 
   def isBuildingSafe( bld : Building ) : Boolean = {
-    if ( notSafe.exists( equals( _, bld ) ) ) {
-      false
-    } else {
-      val b = bld.floors.forall( isFloorSafe( _ ) )
-      if ( !b ) {
-        addNotSafe( bld )
-      }
-      b
-    }
+    bld.floors.forall( isFloorSafe( _ ) )
   }
 
   def isFloorSafe( ps : List[Int] ) : Boolean = {
