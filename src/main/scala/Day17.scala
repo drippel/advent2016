@@ -18,8 +18,7 @@ object Day17 {
     
     // 0 to 3
     // 0 to 3
-    val input = "hijkl"
-    val h = calcHash(input)
+    val h = calcHash(code)
     Console.println(h)
     val mvs = calcOpen(h)
     Console.println(mvs)
@@ -27,13 +26,70 @@ object Day17 {
 
   }
   
+  val code = "hijkl"
+  
+  val solutions = ListBuffer[Step]()
+  
+  def solve( start : Step ) = {
+    
+    val work = Queue[Step]()
+    
+    while( !work.isEmpty ){
+      
+      // start at the current spot
+      val current = work.dequeue()
+      
+      // is this a solution?
+      if( isSolution( current ) ){
+        solutions += current
+      }
+      else {
+
+      
+        // get the path so far
+        val path = getPath( current ) 
+      
+      // calc the hash
+      
+      // calc the open/closed
+      
+      // follow the opens
+      }
+      
+    }
+    
+  }
+  
+  def getPath( step : Step ) : String = {
+    
+    var p = ""
+    
+    // start with the list
+    for( s <- step.steps ){
+      s.dir match {
+        case s : Start => {}
+        case d : Dir => { p = p + d.code }
+      }
+    }
+    
+    // then tack on the current
+    
+    p
+    
+  }
+  
+  def isSolution( step : Step ) : Boolean = {
+    step.x == 3 && step.y == 3
+  }
+  
   class Dir( val x : Int, val y : Int, val code : Char )
+  case class Start() extends Dir( 0, 0, 'S' )
   case class Up() extends Dir( 0, -1, 'U' )
   case class Down() extends Dir( 0, 1, 'D' )
   case class Right() extends Dir( 1, 0, 'R' )
   case class Left() extends Dir( -1, 0, 'L' )
   
-  class Step( val x : Int, val y : Int, val hash : String, val steps : List[Step] )
+  class Step( val x : Int, val y : Int, val dir : Dir, val steps : List[Step] )
   
   val OPEN = List( 'b', 'c', 'd', 'e', 'f' )
   
