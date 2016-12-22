@@ -23,16 +23,55 @@ object Day17 {
     val mvs = calcOpen(h)
     Console.println(mvs)
     
+    solve( new Step( 0, 0, Start(), List() ) ) 
+    
+    Console.println(longest)
+    if( longest.isDefined ){
+      Console.println(getPath(longest.get))
+      Console.println(getPath(longest.get).size)
+    }
 
   }
   
-  val code = "hijkl"
+  // val code = "hijkl"
+  // val code = "ihgpwlah"
+  // val code = "kglvqrro"
+  // val code = "ulqzkmiv"
+  val code = "mmsxrhfx"
   
   val solutions = ListBuffer[Step]()
+  var longest : Option[Step] = None
+  
+  def solved( step : Step ) = {
+    solutions += step
+    
+    longest match {
+      case Some(s) => {
+        if( s.steps.size <= step.steps.size ){
+          longest = Some(step)
+        }
+      }
+      case None => {
+        longest = Some(step)
+      }
+    }
+  }
+  
+  def tooLong( step : Step ) : Boolean = {
+    
+    longest match {
+      case Some(s) => {
+        s.steps.size <= step.steps.size
+      }
+      case None => { false }
+    }
+  }
   
   def solve( start : Step ) = {
     
     val work = Queue[Step]()
+    
+    work.enqueue(start)
     
     while( !work.isEmpty ){
       
@@ -41,23 +80,68 @@ object Day17 {
       
       // is this a solution?
       if( isSolution( current ) ){
-        solutions += current
+        solved( current )
+        // else if( tooLong( current ) ) {
+        // already have a shorter path
+        // }
       }
       else {
 
-      
         // get the path so far
         val path = getPath( current ) 
       
-      // calc the hash
+        // calc the hash
+        val hash = calcHash( code + path )
       
-      // calc the open/closed
+        // calc the open/closed
+        val moves = calcOpen( hash )
+        
+        if( !moves.isEmpty ){
       
-      // follow the opens
+          // follow the opens
+          for( mv <- moves ){
+          
+            // create the next step 
+            val next = nextStep( current, mv )
+          
+            // is the step valid? 
+            if( isValid( next ) ){
+            
+              // queue it
+              work.enqueue(next)
+            }
+            else {
+              // not valid
+            }
+
+          }
+        }
+        else {
+          // dead end
+        }
+
       }
       
     }
     
+  }
+  
+  def isValid( step : Step ) : Boolean = {
+    
+    if( step.x < 0 || step.x > 3 ){
+      false
+    }
+    else if( step.y < 0 || step.y > 3 ){
+      false
+    }
+    else {
+      true
+    }
+    
+  }
+  
+  def nextStep( step : Step, dir : Dir ) : Step = { 
+    new Step( step.x + dir.x, step.y + dir.y, dir, step.steps :+ step )
   }
   
   def getPath( step : Step ) : String = {
@@ -73,6 +157,10 @@ object Day17 {
     }
     
     // then tack on the current
+    step.dir match {
+      case s : Start => {}
+      case d : Dir => { p = p + d.code }
+    }
     
     p
     
