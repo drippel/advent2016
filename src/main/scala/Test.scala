@@ -17,13 +17,18 @@ https://github.com/keonkim/awesome-bits
     */
     
     
-    val i = 42
-    Console.println(i)
-    Console.println(i.toBinaryString)
+    // val i = 42
+    // Console.println(i)
+    // Console.println(i.toBinaryString)
     
-    Console.println(0.toBinaryString)
-    val x = ( i | 1 << 0 )  
-    Console.println(x.toBinaryString)
+    // Console.println(0.toBinaryString)
+    // val x = ( i | 1 << 0 )  
+    // Console.println(x.toBinaryString)
+    
+    val l = 5
+    val d = 2
+    val h = l / d
+    Console.println( h )
     
     
   }

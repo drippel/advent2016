@@ -11,18 +11,19 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
 import scala.collection.mutable.HashSet
 
-object Day19 {
+object Day19a {
   
   class Elf( val id : Int, var prev : Option[Elf], var next : Option[Elf] )
   
   def main( args : Array[String] ) : Unit = {
-    Console.println("day19...")
+    Console.println("day19a...")
     
+    // var start = init(10)
     // var start = init(10)
     var start = init(3004953)
     Console.println(start.id)
     
-    var standing = fight(start, 1)
+    var standing = fight(start,3004953)
     Console.println(standing.id)
   }
   
@@ -48,30 +49,49 @@ object Day19 {
     
   }
 
-  def fight( start: Elf, offset : Int) : Elf = {
+  def fight( start: Elf, size : Int) : Elf = {
     
     var current = start
+    var count = size
+    var d = 2
     
     while( current.id != current.next.get.id ){
       
-      // go forward offset
-      for( i <- 0 until offset ){
-        current = current.next.get
-      }
-      
-      // kill current
-      val prev = current.prev
-      val next = current.next
-
-      prev.get.next = next
-      next.get.prev = prev 
+      // calc the offset
+      val pos = count / d 
+      kill( current, pos )
+      count = count - 1
       
       current = current.next.get
+      
+      if( count % 10000 == 0 ){
+        Console.println(count +" "+ pos)
+      }
       
     }
     
     current
     
+  }
+  
+  def kill( elf : Elf, offset : Int ) = {
+    
+    // count from elf 
+    var current = elf
+    
+    for( i <- 0 until offset ){
+      current = current.next.get
+    }
+    
+    // Console.println("killing:"+ current.id )
+    
+    // kill current
+    val prev = current.prev
+    val next = current.next
+
+    prev.get.next = next
+    next.get.prev = prev 
+      
   }
   
   
