@@ -24,17 +24,15 @@ object Day21a {
     
     val lines = read( "./src/day21.txt" )
     
-    val steps = lines.map( parse( _ ) )
+    var steps = lines.map( parse( _ ) )
+    steps = steps.reverse
     
     // steps.foreach( Console.println( _ ) )
     
-    // val input = "abcde"
-    val input = "abcdefgh"
+    // val input = "decab"
+    // val input = "abcdefgh"
+    val input = "fbgdceah"
     
-    // val output = steps.foldLeft(input)( apply )
-    
-    // val steps = List(RotatePos('e'))
-
     val output = steps.foldLeft(input)( apply )
     
     Console.println(output)
@@ -62,7 +60,7 @@ object Day21a {
         working(p1) = b
       }
       case Rotate(dir,x) => {
-        if( dir == 'r' ){
+        if( dir == 'l' ){
           working = working.reverse
         }
         
@@ -70,26 +68,34 @@ object Day21a {
           working = working.tail :+ working.head
         }
 
-        if( dir == 'r' ){
+        if( dir == 'l' ){
           working = working.reverse
         }
       }
       case RotatePos(c) => {
         
-        var p = working.indexOf(c) 
-        if( p >= 4 ){
-          p = p + 2
+        // get the current position of c
+        // and use the chart
+        
+        val pos = working.indexOf(c) match {
+          case 1 => 0
+          case 3 => 1
+          case 5 => 2
+          case 7 => 3
+          case 2 => 4 
+          case 4 => 5 
+          case 6 => 6 
+          case 0 => 7 
         }
-        else {
-          p = p + 1
-        }
-        working = working.reverse
-
-        for( i <- 0 until p ){
+        
+        // rotate left until the character is at pos
+        
+        var current = working.indexOf(c)
+        
+        while( current != pos ){
           working = working.tail :+ working.head
+          current = working.indexOf(c)
         }
-
-        working = working.reverse
         
       }
       case Reverse(x,y) => {
@@ -103,8 +109,8 @@ object Day21a {
         
       }
       case Move(x,y) => {
-        val c = working.remove(x)
-        working.insert(y,c)
+        val c = working.remove(y)
+        working.insert(x,c)
       }
     }
     

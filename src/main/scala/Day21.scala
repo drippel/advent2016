@@ -24,27 +24,83 @@ object Day21 {
     
     val lines = read( "./src/day21.txt" )
     
-    val steps = lines.map( parse( _ ) )
+    //val steps = lines.map( parse( _ ) )
     
     // steps.foreach( Console.println( _ ) )
     
     // val input = "abcde"
-    val input = "abcdefgh"
     
     // val output = steps.foldLeft(input)( apply )
     
-    // val steps = List(RotatePos('e'))
-
-    val output = steps.foldLeft(input)( apply )
-    
+    var input = "abcdefgh"
+    Console.println(input)
+    var steps = List(RotatePos('a'))
+    var output = steps.foldLeft(input)( apply )
     Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
     
+    input = "habcdefg"
+    Console.println(input)
+    steps = List(RotatePos('a'))
+    output = steps.foldLeft(input)( apply )
+    Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
+
+    input = "ghabcdef"
+    Console.println(input)
+    steps = List(RotatePos('a'))
+    output = steps.foldLeft(input)( apply )
+    Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
+
+    input = "fghabcde"
+    Console.println(input)
+    steps = List(RotatePos('a'))
+    output = steps.foldLeft(input)( apply )
+    Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
+
+    input = "efghabcd"
+    Console.println(input)
+    steps = List(RotatePos('a'))
+    output = steps.foldLeft(input)( apply )
+    Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
+
+    input = "defghabc"
+    Console.println(input)
+    steps = List(RotatePos('a'))
+    output = steps.foldLeft(input)( apply )
+    Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
+
+    input = "cdefghab"
+    Console.println(input)
+    steps = List(RotatePos('a'))
+    output = steps.foldLeft(input)( apply )
+    Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
+
+    input = "bcdefgha"
+    Console.println(input)
+    steps = List(RotatePos('a'))
+    output = steps.foldLeft(input)( apply )
+    Console.println(output)
+    Console.println(input.indexOf('a'))
+    Console.println(output.indexOf('a'))
   }
   
   def apply( input : String, step : Instruction ) : String = {
     
-    Console.println(step)
-    Console.println(input)
+    // Console.println(step)
+    // Console.println(input)
 
     var working = ListBuffer[Char]() ++ input.toList
     
@@ -109,7 +165,7 @@ object Day21 {
     }
     
     
-    Console.println(working.mkString)
+    // Console.println(working.mkString)
     working.mkString
   }
 
