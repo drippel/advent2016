@@ -35,23 +35,25 @@ object Day24 {
     
     val perms = goals.permutations.toList
     
-    /*
+    // Console.println( shortestPath( start.head, perms.head.head, maze ) ) 
+
     var lo = Int.MaxValue
-    for( p <- perms ){
-      print(p)
-      val steps = solve( start.head, p, maze )
+    for( i <- 0 until perms.size ){
+      Console.println(i)
+      print(perms(i))
+      val steps = solve( start.head, perms(i), start.head, maze, lo )
+      Console.println( steps )
       if( steps < lo ){
         lo = steps
       }
+      Console.println(lo)
     }
-    */
-    Console.println("goal:"+ perms.head.head )
-    Console.println( shortestPath( start.head, perms.head.head, maze ) ) 
+    Console.println(lo)
     
     
   }
   
-  def solve( start : Point, goals : List[Point], maze : Array[Array[Char]] ) : Int = {
+  def solve( start : Point, goals : List[Point], end : Point, maze : Array[Array[Char]], currLow : Int ) : Int = {
     
     var current = start
     
@@ -64,7 +66,11 @@ object Day24 {
       current = g
     }
     
-    total
+    // then go back to the start
+    val back = shortestPath( goals.last, end, maze )
+    total = total + back.size - 1
+    
+    return total
   }
   
   def solve( start : Point, goal : Point, maze : Array[Array[Char]] ) : Int = {
@@ -134,15 +140,17 @@ object Day24 {
     
     while( !work.isEmpty ){
       
+      /*
       if( work.size % 1000 == 0 ){
         Console.println(work.size)
       }
+      */
       
       val path = work.dequeue()
       val current = path.head 
       
       if( current.x == goal.x && current.y == goal.y ) {
-        Console.println("solution...")
+        // Console.println("solution...")
         if( shortest.isDefined ){
           if( shortest.get.size > path.size ){
             shortest = Some(path)
