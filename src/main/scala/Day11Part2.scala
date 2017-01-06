@@ -1,5 +1,3 @@
-
-
 import scala.collection.mutable.ListBuffer
 import org.apache.commons.io.IOUtils
 import java.io.BufferedReader
@@ -12,65 +10,115 @@ import scala.collection.mutable.Queue
 import scala.collection.mutable.HashSet
 import java.util.Date
 import scala.collection.mutable.PriorityQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.PriorityBlockingQueue
-import java.util.Comparator
 
-object Day11pairs4 {
+object Day11Part2 {
 
-  // val elements = List( 'H', 'L' )
-  // val elements = List( 'P', 'C', 'U', 'R', 'L' )
+  case class State(val ele: Int, pairs: List[Pair], states: List[State]) extends Ordered[State] {
 
-  case class State(val ele: Int, pairs: List[Pair], states: List[Long])
+    def compare(that: State): Int = {
+      if (ele == that.ele) {
+        val z = pairs.zip(that.pairs)
 
-  def floorToString(floor: Int, state: State): String = {
+        val pt = z.find((t: (Pair, Pair)) => { !t._1.equals(t._2) })
+        pt match {
+          case s: Some[(Pair, Pair)] => {
+            s.get._1.compare(s.get._2)
+          }
+          case None => { 0 }
+        }
+      } else {
+        ele.compare(that.ele)
+      }
+    }
+    
+    def isFloorClear( floor : Int ) : Boolean = {
+      pairs.forall( (p:Pair) => { p.chip != floor && p.rtg != floor } )
+    }
+    
+    def isClearBelow() : Boolean = {
+      pairs.forall( (p:Pair) => { p.chip > ele && p.rtg > ele } )
+    }
 
-    var f = ""
+    def floorToString(floor: Int): String = {
 
-    if (floor == state.ele) {
-      f = f + "1"
+      var f = ""
+
+      if (floor == ele) {
+        f = f + "1"
+      } else {
+        f = f + "0"
+      }
+
+      // loop through the pairs
+      for (p <- pairs) {
+
+        if (floor == p.rtg) {
+          f = f + "1"
+        } else {
+          f = f + "0"
+        }
+
+        if (floor == p.chip) {
+          f = f + "1"
+        } else {
+          f = f + "0"
+        }
+      }
+
+      f
+
+    }
+
+    def stateToString(): String = {
+      // build a string
+      var s = ""
+
+      for (f <- 0 until 4) {
+        s = s + floorToString(f)
+      }
+
+      s
+    }
+
+    def toLong(): Long = {
+      java.lang.Long.parseLong(stateToString(), 2)
+    }
+
+    def isSolved() : Boolean = {
+      pairs.forall((p: Pair) => { p.chip == 3 && p.rtg == 3 })
+    }
+
+    def isLoop(): Boolean = {
+      states.contains(this)
+    }
+
+    def isSafe(): Boolean = {
+
+    val unprotected = for (p <- pairs if p.chip != p.rtg) yield p
+
+    // for each unprotected chip - is there a gen on that floor
+    if (unprotected.size > 0) {
+
+      !unprotected.exists((p1: Pair) => {
+        pairs.exists((p2: Pair) => { p2.rtg == p1.chip })
+      })
+
     } else {
-      f = f + "0"
+      true
     }
+  }
+  }
 
-    // loop through the pairs
-    for (p <- state.pairs) {
-
-      if (floor == p.rtg) {
-        f = f + "1"
+  case class Pair(rtg: Int = 0, chip: Int = 0) extends Ordered[Pair] {
+    def compare(that: Pair): Int = {
+      if (rtg == that.rtg) {
+        chip.compare(that.chip)
       } else {
-        f = f + "0"
+        rtg.compare(that.rtg)
       }
 
-      if (floor == p.chip) {
-        f = f + "1"
-      } else {
-        f = f + "0"
-      }
     }
-
-    f
-
   }
-
-  def stateToString(state: State): String = {
-    // build a string
-
-    var s = ""
-
-    for (f <- 0 until 4) {
-      s = s + floorToString(f, state)
-    }
-
-    s
-  }
-
-  def stateToLong(state: State): Long = {
-    java.lang.Long.parseLong(stateToString(state), 2)
-  }
-
-  case class Pair(rtg: Int, chip: Int)
 
   def main(args: Array[String]): Unit = {
 
@@ -97,27 +145,25 @@ object Day11pairs4 {
     // pairs += Pair(2, 0)
 
     // j
-    pairs += Pair( 0, 0 )
-    pairs += Pair( 1, 2 )
-    pairs += Pair( 1, 2 )
-    pairs += Pair( 1, 2 )
-    pairs += Pair( 1, 2 )
+    // pairs += Pair( 0, 0 )
+    // pairs += Pair( 1, 2 )
+    // pairs += Pair( 1, 2 )
+    // pairs += Pair( 1, 2 )
+    // pairs += Pair( 1, 2 )
 
     // 2
-    // pairs += Pair( 0, 0 )
-    // pairs += Pair( 1, 2 )
-    // pairs += Pair( 1, 2 )
-    // pairs += Pair( 1, 2 )
-    // pairs += Pair( 1, 2 )
-    // pairs += Pair( 0, 0 )
-    // pairs += Pair( 0, 0 )
+     pairs += Pair( 0, 0 )
+     pairs += Pair( 1, 2 )
+     pairs += Pair( 1, 2 )
+     pairs += Pair( 1, 2 )
+     pairs += Pair( 1, 2 )
+     pairs += Pair( 0, 0 )
+     pairs += Pair( 0, 0 )
 
-    val start = State(0, pairs.sortWith(compare).toList, List())
+    val start = State(0, pairs.sorted.reverse.toList, List())
     print(start)
 
-    Console.println(isSafe(start))
-    Console.println(stateToString(start))
-    Console.println(stateToLong(start))
+    Console.println(start.isSafe())
 
     // val ele = elevatorFloor( start )
     // Console.println( ele )
@@ -131,13 +177,17 @@ object Day11pairs4 {
       printSolution(shortest.get)
       Console.println(shortest.get.states.size)
     }
+    else {
+      Console.println("hmmm...")
+    }
+    
 
   }
 
   def printSolution(state: State) = {
 
     for (s <- state.states) {
-      print(visited.get(s).get)
+      print(visited.get(s.toLong()).get)
     }
 
     print(state)
@@ -146,9 +196,7 @@ object Day11pairs4 {
 
   var shortest: Option[State] = None
 
-  def isSolution(state: State): Boolean = {
-    if (state.pairs.forall((p: Pair) => { p.chip == 3 && p.rtg == 3 })) {
-
+  def addSolution(state: State) : Unit = {
       if (shortest.isDefined) {
         if (state.states.size < shortest.get.states.size) {
           shortest = Some(state)
@@ -156,25 +204,17 @@ object Day11pairs4 {
       } else {
         shortest = Some(state)
       }
-
-      true
-    } else {
-      false
-    }
-  }
-
-  def isLoop(start: State): Boolean = {
-    start.states.contains(stateToLong(start))
   }
 
   var visited = HashMap[Long, State]()
 
   def isVisited(state: State): Boolean = {
-    visited.get(stateToLong(state)) match {
+    val l = state.toLong()
+    visited.get(l) match {
       case Some(s) => {
 
         if (state.states.size < s.states.size) {
-          visited.put(stateToLong(state), state)
+          visited.put(l, state)
           false
         } else {
           // the current path is shorter
@@ -183,7 +223,7 @@ object Day11pairs4 {
 
       }
       case None => {
-        visited.put(stateToLong(state), state)
+        visited.put(l, state)
         false
       }
     }
@@ -201,7 +241,9 @@ object Day11pairs4 {
 
   def distance(state: State): Int = {
 
-    var sum = ds(state.ele)
+    // do we care where the elevator is?
+    // var sum = ds(state.ele)
+    var sum = 0 
 
     for (p <- state.pairs) {
       sum += ds(p.chip)
@@ -212,100 +254,109 @@ object Day11pairs4 {
 
   }
 
-  class ByDistance extends Comparator[Runnable] {
-    override def compare(r1: Runnable, r2 : Runnable): Int = {
-      
-      val s1 = r1.asInstanceOf[SolverTask]
-      val s2 = r2.asInstanceOf[SolverTask]
-      val d1 = distance(s1.state)
-      val d2 = distance(s2.state)
+  class ByDistance() extends Ordering[State] {
+    def compare(s1: State, s2: State): Int = {
+      val d1 = distance(s1)
+      val d2 = distance(s2)
       d1.compare(d2)
     }
   }
 
-  val work = new PriorityBlockingQueue[Runnable](1000, (new ByDistance()).reversed())
-  val solverExecutor = new ThreadPoolExecutor(10, 100, 10, TimeUnit.SECONDS, work)
-
   def solve(start: State) = {
 
+    var checked = 0L
+    var lo = 0
+    var hi = 0
+    var tm = (new Date()).getTime
+
+    // var work = Queue[State]()
+    var work = PriorityQueue[State]()((new ByDistance()).reverse)
+
     isVisited(start)
-    solverExecutor.execute(new SolverTask(start))
 
-    while (solverExecutor.getActiveCount() > 0) {
+    work.enqueue(start)
 
-      Console.println(".")
+    while (!work.isEmpty) {
 
-      try {
-        Thread.sleep(10000)
-      } catch {
-        case t: Throwable => {
-        }
+      checked = checked + 1
+
+      if (lo < work.head.states.size && work.head.states.size == work.last.states.size) {
+        // Console.println( "sort queue..." )
+        // val dnew = work.sortWith(greater)
+        // work = dnew
+        lo = work.head.states.size
       }
 
-    }
+      val current = work.dequeue()
 
-    solverExecutor.shutdown()
+      if (work.size > 1000 && work.size % 10000 == 0) {
+        // Console.println( "lo,hi:"+ work.head.states.size +","+ work.last.states.size )
+        Console.println("w:" + work.size)
+        Console.println("c:" + checked)
+        Console.println("v:" + visited.size)
+        Console.println("t:" + ((new Date()).getTime() - tm))
+        tm = (new Date()).getTime
+        print( work.head )
+        print( work.last )
+      }
 
-  }
-
-  class SolverTask(val state: State) extends Runnable {
-
-    override def run(): Unit = {
-
-      // is this safe?
-      if (isSolution(state)) {
+      if( current.isSolved() ) {
         Console.println("solved...")
-        print(state)
+        addSolution(current)
+        print(current)
       } else {
 
-        val ele = elevatorFloor(state)
-        val mvs = generateMoves(ele, state.pairs.size)
+        val ele = elevatorFloor(current)
+        val mvs = generateMoves(ele, current.pairs.size)
+        // val mvs = generateMoves( current )
 
         // for each move
         for (mv <- mvs) {
-
-          up(state, mv) match {
+          up(current, mv) match {
             case Some(up) => {
               if (isVisited(up)) {
-                // done
-              } else if (isLoop(up)) {
-                // done
+                checked = checked + 1
+              } else if (up.isLoop()) {
+                checked = checked + 1
               } else if (isTooLong(up)) {
-                // done
-              } else if (!isSafe(up)) {
-                // done
+                checked = checked + 1
+              } else if (!up.isSafe()) {
+                checked = checked + 1
               } else {
-                solverExecutor.execute(new SolverTask(up))
+                work.enqueue(up)
               }
             }
             case None => {
-              // done 
+              checked = checked + 1
             }
           }
+          
+          if( !current.isClearBelow() ){
 
-          down(state, mv) match {
+          down(current, mv) match {
             case Some(down) => {
               if (isVisited(down)) {
-                // done
-              } else if (isLoop(down)) {
-                // done 
+                checked = checked + 1
+              } else if (down.isLoop()) {
+                checked = checked + 1
               } else if (isTooLong(down)) {
-                // done 
-              } else if (!isSafe(down)) {
-                // done 
+                checked = checked + 1
+              } else if (!down.isSafe()) {
+                checked = checked + 1
               } else {
-                solverExecutor.execute(new SolverTask(down))
+                work.enqueue(down)
               }
             }
             case None => {
-              // done 
+              checked = checked + 1
             }
           }
+          }
         }
-
       }
 
     }
+
   }
 
   def up(state: State, is: List[Int]): Option[State] = {
@@ -348,7 +399,7 @@ object Day11pairs4 {
     }
 
     // create a new state 
-    State(ele, pairs.toList.sortWith(equals), state.states :+ stateToLong(state))
+    State(ele, pairs.sorted.toList, state.states :+ state )
   }
 
   def elevatorFloor(state: State): List[Int] = {
@@ -370,56 +421,9 @@ object Day11pairs4 {
     ps.toList
   }
 
-  def isSafe(state: State): Boolean = {
-
-    val unprotected = for (p <- state.pairs if p.chip != p.rtg) yield p
-
-    // for each unprotected chip - is there a gen on that floor
-    if (unprotected.size > 0) {
-
-      !unprotected.exists((p1: Pair) => {
-        state.pairs.exists((p2: Pair) => { p2.rtg == p1.chip })
-      })
-
-    } else {
-      true
-    }
-  }
-
-  def greater(s1: State, s2: State): Boolean = {
-
-    // sum s1
-    val sum1 = s1.pairs.foldLeft(s1.ele)((a: Int, b: Pair) => { a + b.rtg + b.chip })
-    val sum2 = s2.pairs.foldLeft(s2.ele)((a: Int, b: Pair) => { a + b.rtg + b.chip })
-
-    sum1 > sum2
-  }
-
-  def equals(s1: State, s2: State): Boolean = {
-    if (s1.ele == s2.ele) {
-
-      val z = s1.pairs.zip(s2.pairs)
-      z.forall((t: (Pair, Pair)) => { equals(t._1, t._2) })
-    } else {
-      false
-    }
-  }
-
-  def equals(p1: Pair, p2: Pair): Boolean = {
-    p1.rtg == p2.rtg && p1.chip == p2.chip
-  }
-
-  def compare(p1: Pair, p2: Pair): Boolean = {
-
-    if (p1.rtg > p2.rtg) {
-      true
-    } else {
-      p1.chip > p2.chip
-    }
-  }
 
   def print(state: State) = {
-    Console.println("-" + isSolution(state))
+    Console.println("-" + state.isSolved() )
     Console.println(state.states.size)
     for (i <- 3 to 0 by -1) {
 
