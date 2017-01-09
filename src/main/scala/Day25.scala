@@ -11,6 +11,12 @@ import scala.collection.mutable.HashMap
 
 object Day25 {
   
+  var registers = HashMap[Char,Int]( ('a'-> 0), ( 'b' -> 0 ), ( 'c' -> 0), ( 'd' -> 0 ) )
+  
+  def resetRegisters() = {
+    registers = HashMap[Char,Int]( ('a'-> 0), ( 'b' -> 0 ), ( 'c' -> 0), ( 'd' -> 0 ) )
+  }
+
   def main( args : Array[String] ) : Unit = {
     Console.println("day25...")
     
@@ -19,9 +25,68 @@ object Day25 {
     val instrs = lines.map( convert( _ ) )
 
     // instrs.foreach( Console.println(_) ) 
+    // registers.put( 'a', 12 )
+    debug=false
     // run( instrs )
+    solve( instrs )
     // Console.println( registers )
+
+  }
+  
+  var debug = false
+  
+  def dump() = {
+    Console.println( registers )
+  }
+  
+  def solve( is : List[Instruction] ) = {
     
+    var min = 0
+    
+    var found = false
+    while( !found ){
+      
+      // reset the output
+      resetOut()
+      
+      // keset the registers
+      resetRegisters()
+      
+      // set a
+      registers.put('a', min )
+      
+      Console.println("Testing:"+ min )
+      
+      // run
+      run(is)
+      
+      // test the output
+      if( EXPECTED.equals(output) ){
+        found = true
+        Console.println("Found:"+ min )
+      }
+      
+      min = min + 1
+    }
+  }
+  
+  val EXPECTED = "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+
+  def resetOut() = {
+    stop = false
+    output = ""
+  }
+  
+  var stop = false
+  var output = "" 
+  
+  def transmit( i : Int ) = {
+    output = output + i
+    
+    if( output.length() >= 100 ){
+      Console.println( "\nOutput:"+ output)
+      stop = true
+    }
   }
   
   def run( is : List[Instruction] ) = {
@@ -32,10 +97,13 @@ object Day25 {
     var pos = 0
     var count = 0
     
-    while( pos < instr.size ){
+    if( debug ){ dump() } 
+    
+    while( pos < instr.size && !stop ){
       
       // Console.println( instr(pos) ) 
       // Console.println( "pre:"+ registers ) 
+      if( debug ){ Console.println( instr( pos ) ) }
 
       instr(pos) match {
         case c : Cpy => {
@@ -93,6 +161,14 @@ object Day25 {
           pos = pos + 1
           
         }
+        case o : Out => {
+          val v = o.x match {
+            case Left(i) => {i}
+            case Right(r) => { registers.get(r(0)).get }
+          }
+          transmit(v)
+          pos = pos + 1
+        }
         case _ => { throw new IllegalStateException( "bad instruction") }
       }
       
@@ -101,8 +177,10 @@ object Day25 {
       count = count + 1
       
       if( count % 10000 == 0 ){
-        Console.print(".")
+        // Console.print(".")
       }
+      
+      if( debug ){ dump() } 
       
     }
     
@@ -130,43 +208,36 @@ object Day25 {
     
     parts(0) match {
       case "cpy" => { 
-        val x = if( isNumber( parts(1) ) ){
-          Left(parts(1).toInt)
-        }
-        else {
-          Right(parts(1))
-        }
-        Cpy( x, Right(parts(2)) )
+        Cpy( numOrReg(parts(1)), Right(parts(2)) )
       }
       case "inc" => { Inc( parts(1) ) }
       case "dec" => { Dec( parts(1) ) }
       case "jnz" => { 
-        val x = if( isNumber( parts(1) ) ){
-          Left(parts(1).toInt)
-        }
-        else {
-          Right(parts(1))
-        }
-        val y = if( isNumber( parts(2) ) ){
-          Left(parts(2).toInt)
-        }
-        else {
-          Right(parts(2))
-        }
-        Jnz( x, y )
+        Jnz( numOrReg(parts(1)), numOrReg(parts(2)) )
       }
       case "tgl" => {
         Tgl(parts(1))
       }
+      case "out" => {
+        Out(numOrReg(parts(1)))
+      }
       case _ => { throw new IllegalArgumentException( line ) }
     }
+  }
+  
+  def numOrReg( s : String ) : Either[Int,String] = {
+        if( isNumber( s )  ){
+          Left(s.toInt)
+        }
+        else {
+          Right(s)
+        }
   }
   
   def isNumber( s : String ) : Boolean = {
     s(0) <= 57 
   }
   
-  val registers = HashMap[Char,Int]( ('a'-> 12), ( 'b' -> 0 ), ( 'c' -> 0), ( 'd' -> 0 ) )
   
   class Instruction()
   case class Cpy( x : Either[Int,String], y : Either[Int,String] ) extends Instruction
@@ -174,6 +245,7 @@ object Day25 {
   case class Dec( x : String ) extends Instruction
   case class Jnz( x : Either[Int,String], y : Either[Int,String] ) extends Instruction
   case class Tgl( x : String ) extends Instruction
+  case class Out( x : Either[Int,String] ) extends Instruction
   
   
 }
